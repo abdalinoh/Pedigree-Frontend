@@ -1,0 +1,56 @@
+/* Home.css */
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.home-main {
+  flex: 1;
+  padding: 20px;
+}
+
+.home-section {
+  text-align: center;
+}
+
+.home-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.home-button {
+  width: 100%;
+}
+
+.error {
+  color: red;
+}
+
+.home-footer {
+  background: #343a40;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.navbar {
+  margin-bottom: 20px;
+}
+
+.nav-link {
+  margin-left: 15px;
+}
+
+@media (max-width: 767px) {
+  .navbar-expand-lg .navbar-collapse {
+    background-color: #343a40;
+  }
+
+  .home-buttons {
+    flex-direction: column;
+  }
+}
