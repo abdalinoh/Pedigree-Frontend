@@ -1,26 +1,49 @@
 import React, { useState, useEffect } from 'react';
+import { Alert, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../services/axiosSetup'; // Importer l'instance axios configurée
+import axiosInstance from '../services/axiosSetup';
+import { useFamily } from '../context/FamilyContext';
 
 const AddMember = () => {
+    const { familyData } = useFamily();
     const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
     const [dateNaissance, setDateNaissance] = useState('');
-    const [pereName, setPereName] = useState();
-    const [mereName, setMereName] = useState();
+    const [pereName, setPereName] = useState('');
+    const [mereName, setMereName] = useState('');
     const [isMarried, setIsMarried] = useState('');
     const [gender, setGender] = useState('');
     const [religion, setReligion] = useState('');
     const [bloodGroup, setBloodGroup] = useState('');
     const [electrophoresis, setElectrophoresis] = useState('');
     const [signFa, setSignFA] = useState('');
-    const [message, setMessage] = useState('');
     const [conjointName, setConjointName] = useState('');
     const [metier, setMetier] = useState('');
     const [members, setMembers] = useState([]);
     const [linkTypes, setLinkTypes] = useState([]);
     const [selectedLinkType, setSelectedLinkType] = useState('');
+    const [role, setRole] = useState(null);
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+    
     const navigate = useNavigate(); 
+
+    useEffect(() => {
+        const fetchRole = async () => {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await axiosInstance.get('/All-Permision', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                setRole(response.data.role);
+            } catch (error) {
+                console.error('Erreur lors de la récupération du rôle de l\'utilisateur:', error);
+            }
+        };
+    
+        fetchRole();
+    }, []);
 
     useEffect(() => {
         const fetchLinkTypes = async () => {
@@ -31,7 +54,7 @@ const AddMember = () => {
                 console.log('Erreur lors de la récupération des types de liens:', error);
             }
         };
-
+    
         fetchLinkTypes();
     }, []);
 
@@ -47,50 +70,74 @@ const AddMember = () => {
         fetchMembers();
     }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token'); // Récupérer l'ID de l'utilisateur connecté
-
+    const checkIfMemberExists = async (firstName, dateNaissance) => {
         try {
-            const response = await axiosInstance.post('/membres/ajouter', {
-                prenom: firstName,
-                token: token, // Utiliser l'ID de l'utilisateur connecté
-                nom: lastName,
-                date_de_naissance: dateNaissance,
-                id_pere: pereName,
-                id_mere: mereName,
-                statut_matrimonial: isMarried,
-                type_de_lien: selectedLinkType,
-                sexe: gender,
-                religion,
-                groupe_sanguin: bloodGroup,
-                electrophorese: electrophoresis,
-                signe_du_fa: signFa,
-                conjoint: conjointName,
-                profession: metier
-            });
-
-            console.log('Réponse du serveur:', response);
-
-            alert('Ajout réussie!');
-            setMessage('Ajout réussie! Vous avez maintenant un nouveau membre.');
-            resetForm();
+          const response = await axiosInstance.get('/membres/existe', {
+            params: { prenom: firstName, date_de_naissance: dateNaissance, sexe: gender }
+          });
+          return response.data.exists; // Supposons que la réponse contient un champ 'exists'
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
-            setMessage(errorMessage);
-            console.log(error);
+          console.error('Erreur lors de la vérification de l\'existence du membre:', error);
+          return false;
         }
-    };
+      };
 
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        const token = localStorage.getItem('authToken');
+      
+        // Vérifier si le membre existe déjà
+        const memberExists = await checkIfMemberExists(firstName, dateNaissance, gender);
+        if (memberExists) {
+          setMessage('Un membre avec ces informations existe déjà.');
+          setLoading(false);
+          setTimeout(() => navigate('/home'), 3000); // Redirection vers la page d'accueil après 3 secondes
+          return;
+        }
+      
+        try {
+          const response = await axiosInstance.post('/membres/ajouter', {
+            prenom: firstName,
+            token: token,
+            nom: familyData.family_name || '',
+            date_de_naissance: dateNaissance,
+            id_pere: pereName,
+            id_mere: mereName,
+            statut_matrimonial: isMarried,
+            type_de_lien: role === 'ADMIN' ? null : selectedLinkType,
+            sexe: gender,
+            religion,
+            groupe_sanguin: bloodGroup,
+            electrophorese: electrophoresis,
+            signe_du_fa: signFa,
+            conjoint: conjointName,
+            profession: metier
+          }, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+      
+          console.log('Réponse du serveur:', response);
+          setMessage('Ajout réussie! Vous avez maintenant un nouveau membre.');
+          resetForm();
+          setTimeout(() => navigate('/home'), 3000); // Rediriger après l'ajout réussi
+        } catch (error) {
+          const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
+          setMessage(errorMessage);
+          console.log(error);
+        } finally {
+          setLoading(false);
+        }
+      };
     const handleCancel = () => {
         resetForm();
-        // Rediriger vers une autre page, par exemple la page d'accueil
-        navigate('/home');
+        navigate('/login');
     };
 
     const resetForm = () => {
         setFirstName('');
-        setLastName('');
         setDateNaissance('');
         setPereName('');
         setMereName('');
@@ -106,10 +153,18 @@ const AddMember = () => {
         setMessage('');
     };
 
+    const isAdmin = role === 'ADMIN';
+
     return (
         <div className="register-member-container">
             <h2>Ajouter un membre</h2>
             {message && <p>{message}</p>}
+            {isAdmin && (
+                <Alert variant="success">
+                    Vous êtes connecté en tant qu'Administrateur.
+                </Alert>
+            )}
+            {loading && <Spinner animation="border" />}
             <form onSubmit={handleSubmit}>
                 <fieldset>
                     <legend>Informations générales</legend>
@@ -117,9 +172,8 @@ const AddMember = () => {
                         <label>Nom :</label>
                         <input
                             type="text"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            required
+                            value={familyData.family_name || ''}
+                            readOnly
                         />
                     </div>
                     <div>
@@ -140,8 +194,7 @@ const AddMember = () => {
                         >
                             <option value="">Sélectionner...</option>
                             <option value="Masculin">Masculin</option>
-                            <option value="Feminin">Feminin</option>
-                            <option value="Autre">Autre</option>
+                            <option value="Féminin">Féminin</option>
                         </select>
                     </div>
                     <div>
@@ -187,9 +240,11 @@ const AddMember = () => {
                 </fieldset>
                 <fieldset>
                     <legend>Autres informations</legend>
-                    <div>
-                        <label>Type de lien :</label>
-                        <select
+                    {!isAdmin && (
+                    <Form.Group>
+                        <Form.Label>Type de lien :</Form.Label>
+                        <Form.Control
+                            as="select"
                             value={selectedLinkType}
                             onChange={(e) => setSelectedLinkType(e.target.value)}
                             required
@@ -200,8 +255,9 @@ const AddMember = () => {
                                     {type}
                                 </option>
                             ))}
-                        </select>
-                    </div>
+                        </Form.Control>
+                    </Form.Group>
+                )}
                     <div>
                         <label>État matrimonial :</label>
                         <select
@@ -247,6 +303,7 @@ const AddMember = () => {
                             <option value="Hindouisme">Hindouisme</option>
                             <option value="Bouddhisme">Bouddhisme</option>
                             <option value="Judaisme">Judaïsme</option>
+                            <option value="Autre">Autre</option>
                         </select>
                     </div>
                     <div>

@@ -3,12 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import moment from 'moment';
+import { useFamily } from '../context/FamilyContext';
 
 const EditMember = () => {
     const { id } = useParams();
     const [member, setMember] = useState(null);
     const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
     const [dateNaissance, setDateNaissance] = useState('');
     const [pereName, setPereName] = useState('');
     const [mereName, setMereName] = useState('');
@@ -24,69 +24,63 @@ const EditMember = () => {
     const [members, setMembers] = useState([]);
     const [linkTypes, setLinkTypes] = useState([]);
     const [selectedLinkType, setSelectedLinkType] = useState('');
+    const { familyData } = useFamily();
     const navigate = useNavigate(); 
 
     useEffect(() => {
-        const fetchMember = async () => {
+        let isMounted = true; // suivi si le composant est monté
+    
+        const fetchData = async () => {
             try {
-                const response = await axiosInstance.get(`/membres/afficher/${id}`);
-                const memberData = response.data.data;
-
-                // Convertir la date au format requis en utilisant moment
-                const formattedDate = moment(memberData.date_de_naissance).format('YYYY-MM-DD');
-
-                setMember(memberData);
-                setFirstName(memberData.prenom);
-                setLastName(memberData.nom);
-                setDateNaissance(formattedDate);
-                setPereName(memberData.id_pere || '');
-                setMereName(memberData.id_mere || '');
-                setIsMarried(memberData.statut_matrimonial || '');
-                setGender(memberData.sexe || '');
-                setReligion(memberData.religion || '');
-                setBloodGroup(memberData.groupe_sanguin || '');
-                setElectrophoresis(memberData.electrophorese || '');
-                setSignFA(memberData.signe_du_fa || '');
-                setConjointName(memberData.conjoint || '');
-                setMetier(memberData.profession || '');
-                setSelectedLinkType(memberData.type_de_lien || '');
+                const [memberResponse, linkTypesResponse, membersResponse] = await Promise.all([
+                    axiosInstance.get(`/membres/afficher/${id}`),
+                    axiosInstance.get('/liens/types'),
+                    axiosInstance.get('/membres/tous')
+                ]);
+    
+                if (isMounted) {
+                    const memberData = memberResponse.data.data;
+                    const formattedDate = moment(memberData.date_de_naissance).format('YYYY-MM-DD');
+    
+                    setMember(memberData);
+                    setFirstName(memberData.prenom);
+                    setDateNaissance(formattedDate);
+                    setPereName(memberData.id_pere || '');
+                    setMereName(memberData.id_mere || '');
+                    setIsMarried(memberData.statut_matrimonial || '');
+                    setGender(memberData.sexe || '');
+                    setReligion(memberData.religion || '');
+                    setBloodGroup(memberData.groupe_sanguin || '');
+                    setElectrophoresis(memberData.electrophorese || '');
+                    setSignFA(memberData.signe_du_fa || '');
+                    setConjointName(memberData.conjoint || '');
+                    setMetier(memberData.profession || '');
+                    setSelectedLinkType(memberData.type_de_lien || '');
+    
+                    setLinkTypes(linkTypesResponse.data);
+                    setMembers(membersResponse.data);
+                }
             } catch (error) {
-                console.error('Erreur lors de la récupération du membre', error);
-                setMessage('Erreur lors de la récupération des données du membre.');
+                if (isMounted) {
+                    console.error('Erreur lors de la récupération des données:', error);
+                    setMessage('Erreur lors de la récupération des données.');
+                }
             }
         };
-
-        const fetchLinkTypes = async () => {
-            try {
-                const response = await axiosInstance.get('/liens/types');
-                setLinkTypes(response.data);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des types de liens:', error);
-                setMessage('Erreur lors de la récupération des types de liens.');
-            }
+    
+        fetchData();
+    
+        return () => {
+            isMounted = false; // fonction de nettoyage
         };
-
-        const fetchMembers = async () => {
-            try {
-                const response = await axiosInstance.get('/membres/tous');
-                setMembers(response.data);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des membres', error);
-                setMessage('Erreur lors de la récupération des membres.');
-            }
-        };
-
-        fetchMember();
-        fetchLinkTypes();
-        fetchMembers();
     }, [id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.put(`/membres/modifier/${id}`, {
+            await axiosInstance.put(`/membres/modifier/${id}`, {
                 prenom: firstName,
-                nom: lastName,
+                nom: familyData.family_name || '',
                 date_de_naissance: moment(dateNaissance).format('DD/MM/YYYY'),
                 id_pere: pereName,
                 id_mere: mereName,
@@ -100,18 +94,14 @@ const EditMember = () => {
                 conjoint: conjointName,
                 profession: metier
             });
-
-            console.log('Réponse du serveur:', response);
-            alert('Modification réussie!');
             setMessage('Membre modifié avec succès!');
             navigate('/members-list');
         } catch (error) {
             const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
             setMessage(errorMessage);
-            console.log('Erreur lors de la mise à jour:', error);
+            console.error('Erreur lors de la mise à jour:', error);
         }
     };
-
     const handleCancel = () => {
         navigate('/members-list'); // Rediriger vers la liste des membres sans modifier
     };
@@ -130,8 +120,7 @@ const EditMember = () => {
                                     <Form.Label>Nom</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        value={lastName}
-                                        onChange={(e) => setLastName(e.target.value)}
+                                        value={familyData.family_name || ''}
                                         required
                                     />
                                 </Form.Group>

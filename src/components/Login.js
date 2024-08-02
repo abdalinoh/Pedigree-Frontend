@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +19,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://192.168.86.55:5000/api/utilisateurs/connexion', {
+      const response = await axios.post('http://192.168.86.129:5000/api/utilisateurs/connexion', {
         email,
         mot_de_passe: password
       }, {
@@ -30,13 +30,23 @@ const Login = () => {
       console.log('Réponse du serveur:', response);
 
       // Stocker le token et l'ID utilisateur dans localStorage
-      localStorage.setItem('token', response.data.date.token);
-      localStorage.setItem('idUtilisateur', response.data.date.idUtilisateur); // Ajoutez userId si nécessaire
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('idUtilisateur', response.data.idUtilisateur);
+      localStorage.setItem('familyId', response.data.idFamille);
+      localStorage.setItem('isFamOwner', response.data.fam_owner);
+      localStorage.setItem('userRole', response.data.role);
 
       setMessage('Connexion réussie ! Veuillez patienter pendant que nous vous connectons.');
       setMessageType('success');
       setIsLoggedIn(true); // Met à jour l'état pour cacher le formulaire
-      setTimeout(() => navigate('/home'), 2000); // Redirige vers la page d'accueil après 2 secondes
+
+      if (onLogin) {
+        onLogin(); // Appel du callback pour indiquer que la connexion est réussie
+      }
+
+      // Redirection basée sur le rôle
+      const redirectPath = response.data.role === 'ADMIN' ? '/admin-dashboard' : '/user-dashboard';
+      setTimeout(() => navigate(redirectPath), 3000); // Redirige vers la page basée sur le rôle après 3 secondes
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
       setMessage(errorMessage);
@@ -62,8 +72,9 @@ const Login = () => {
       {!isLoggedIn && (
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <label>Email :</label>
+            <label htmlFor="email">Email :</label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -73,9 +84,10 @@ const Login = () => {
             />
           </div>
           <div className="input-group password-group">
-            <label>Mot de passe :</label>
+            <label htmlFor="password">Mot de passe :</label>
             <div className="password-wrapper">
               <input
+                id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -90,10 +102,10 @@ const Login = () => {
           <button type="submit" disabled={loading}>
             {loading ? 'Connexion en cours...' : 'Se connecter'}
           </button>
+          <p>
+            <a href="/forgot-password">Mot de passe oublié ?</a>
+          </p>
         </form>
-      )}
-      {!isLoggedIn && (
-        <p>Pas encore inscrit ? <Link to="/register">S'inscrire</Link></p>
       )}
     </div>
   );

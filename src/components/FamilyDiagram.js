@@ -1,10 +1,55 @@
-import React from 'react'; // Only import what you need
+import React, { useState, useEffect } from 'react';
 import * as go from 'gojs';
 import { ReactDiagram } from 'gojs-react';
+import axiosInstance from '../services/axiosSetup'; // Assurez-vous que ce chemin est correct
 
 const FamilyDiagram = () => {
+  const [nodeDataArray, setNodeDataArray] = useState([]);
+  const [linkDataArray, setLinkDataArray] = useState([]);
+
+  useEffect(() => {
+    const fetchFamilyData = async () => {
+      try {
+        const response = await axiosInstance.get('/membres/tous');
+        console.log('Données reçues:', response.data); // Vérifiez les données reçues
+
+        if (!response.data) {
+          throw new Error('Aucune donnée reçue');
+        }
+
+        const members = response.data;
+
+        const nodes = members.map(member => ({
+          key: member._id,
+          text: `${member.prenom} ${member.nom}`,
+          color: 'lightblue',
+          loc: '0 0' // Vous pouvez ajuster la position initiale si nécessaire
+        }));
+
+        const links = members.flatMap(member => {
+          const links = [];
+          if (member.id_pere) {
+            links.push({ key: `link-${member._id}-pere`, from: member.id_pere, to: member._id, text: 'Père' });
+          }
+          if (member.id_mere) {
+            links.push({ key: `link-${member._id}-mere`, from: member.id_mere, to: member._id, text: 'Mère' });
+          }
+          return links;
+        });
+
+        setNodeDataArray(nodes);
+        setLinkDataArray(links);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données familiales:', error);
+      }
+    };
+
+    fetchFamilyData();
+  }, []);
+
   function initDiagram() {
     const $ = go.GraphObject.make;
+
     const diagram = $(go.Diagram, {
       'undoManager.isEnabled': true,
       'clickCreatingTool.archetypeNodeData': { text: 'new node', color: 'lightblue' },
@@ -13,6 +58,7 @@ const FamilyDiagram = () => {
       })
     });
 
+    // Template de nœud
     diagram.nodeTemplate = $(
       go.Node,
       'Auto',
@@ -30,32 +76,37 @@ const FamilyDiagram = () => {
       )
     );
 
+    // Template de lien
+    diagram.linkTemplate = $(
+      go.Link,
+      { curve: go.Link.Bezier },
+      $(
+        go.Shape,
+        { strokeWidth: 2, stroke: '#555' }
+      ),
+      $(
+        go.TextBlock,
+        { segmentOffset: new go.Point(0, -10) },
+        new go.Binding('text')
+      )
+    );
+
+    // Configurer le TreeLayout
+    diagram.layout = new go.TreeLayout({ angle: 90 });
+
     return diagram;
   }
 
-  function handleModelChange(changes) {
-    alert('GoJS model changed!');
-  }
+  
 
   return (
     <div style={{ width: '100%', height: '600px' }}>
       <ReactDiagram
         initDiagram={initDiagram}
         divClassName='diagram-component'
-        nodeDataArray={[
-          { key: 0, text: 'Alpha', color: 'lightblue', loc: '0 0' },
-          { key: 1, text: 'Beta', color: 'orange', loc: '150 0' },
-          { key: 2, text: 'Gamma', color: 'lightgreen', loc: '0 150' },
-          { key: 3, text: 'Delta', color: 'pink', loc: '150 150' }
-        ]}
-        linkDataArray={[
-          { key: -1, from: 0, to: 1 },
-          { key: -2, from: 0, to: 2 },
-          { key: -3, from: 1, to: 1 },
-          { key: -4, from: 2, to: 3 },
-          { key: -5, from: 3, to: 0 }
-        ]}
-        onModelChange={handleModelChange}
+        nodeDataArray={nodeDataArray}
+        linkDataArray={linkDataArray}
+       
       />
     </div>
   );

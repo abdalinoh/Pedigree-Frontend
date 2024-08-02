@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { useFamily } from '../context/FamilyContext';
 
-
-const Register = () => {
+const Register = ({ onRegister }) => {
+  const { familyData } = useFamily();
   const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,10 +17,9 @@ const Register = () => {
   const [messageType, setMessageType] = useState(''); // 'error' ou 'success'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false); // État pour contrôler l'affichage du formulaire
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const validatePassword = (password) => {
-    // Exemple de critères : au moins 8 caractères, une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return regex.test(password);
   };
@@ -43,10 +42,12 @@ const Register = () => {
     try {
       setIsSubmitting(true);
       const response = await axios.post('http://192.168.86.55:5000/api/utilisateurs/enregistrer', {
-        nom: lastName,
+        nom: familyData.family_name || '', // Utiliser le nom de famille passé en prop
         prenom: firstName,
         email,
-        mot_de_passe: password
+        mot_de_passe: password,
+        idFamille: familyData.idFamille,
+        fam_exist: familyData.fam_exist
       }, {
         headers: {
           'Content-Type': 'application/json'
@@ -55,13 +56,22 @@ const Register = () => {
 
       console.log('Réponse du serveur:', response);
 
+      const {token, idFamille, fam_owner } = response.data;
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('familyId', idFamille);
+      localStorage.setItem('isFamOwner', fam_owner);
+
       setMessage('Inscription réussie! Vous serez redirigé vers la page de connexion.');
       setMessageType('success');
       setIsRegistered(true); // Masquer le formulaire après l'inscription réussie
 
-      setTimeout(() => {
-        navigate('/Login');
-      }, 2000);
+      if (onRegister) {
+        onRegister(); // Appel du callback pour indiquer que l'inscription est terminée
+      }
+
+      // setTimeout(() => {
+      //   navigate('/Login');
+      // }, 2000);
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
       setMessage(errorMessage);
@@ -115,10 +125,8 @@ const Register = () => {
             <label>Nom :</label>
             <input
               type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              disabled={isSubmitting}
+              value={familyData.family_name || ''}
+              readOnly
             />
           </div>
           <div>
@@ -186,9 +194,6 @@ const Register = () => {
             {isSubmitting ? 'Inscription en cours...' : "S'inscrire"}
           </button>
         </form>
-      )}
-      { !isRegistered && (
-      <p>Vous avez déjà un compte ? <Link to="/Login">Se connecter</Link></p>
       )}
     </div>
   );
