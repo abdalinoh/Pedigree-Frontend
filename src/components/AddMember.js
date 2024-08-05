@@ -3,6 +3,8 @@ import { Alert, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
 import { useFamily } from '../context/FamilyContext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AddMember = () => {
     const { familyData } = useFamily();
@@ -25,12 +27,13 @@ const AddMember = () => {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     
+    
     const navigate = useNavigate(); 
 
     useEffect(() => {
         const fetchRole = async () => {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token');
                 const response = await axiosInstance.get('/All-Permision', {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -85,55 +88,60 @@ const AddMember = () => {
       const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('token');
       
         // Vérifier si le membre existe déjà
         const memberExists = await checkIfMemberExists(firstName, dateNaissance, gender);
         if (memberExists) {
-          setMessage('Un membre avec ces informations existe déjà.');
-          setLoading(false);
-          setTimeout(() => navigate('/home'), 3000); // Redirection vers la page d'accueil après 3 secondes
-          return;
+            setMessage('Un membre avec ces informations existe déjà.');
+            toast.error('Un membre avec ces informations existe déjà.');
+            setLoading(false);
+            setTimeout(() => navigate('/home'), 3000); // Redirection vers la page d'accueil après 3 secondes
+            return;
         }
       
         try {
-          const response = await axiosInstance.post('/membres/ajouter', {
-            prenom: firstName,
-            token: token,
-            nom: familyData.family_name || '',
-            date_de_naissance: dateNaissance,
-            id_pere: pereName,
-            id_mere: mereName,
-            statut_matrimonial: isMarried,
-            type_de_lien: role === 'ADMIN' ? null : selectedLinkType,
-            sexe: gender,
-            religion,
-            groupe_sanguin: bloodGroup,
-            electrophorese: electrophoresis,
-            signe_du_fa: signFa,
-            conjoint: conjointName,
-            profession: metier
-          }, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-      
-          console.log('Réponse du serveur:', response);
-          setMessage('Ajout réussie! Vous avez maintenant un nouveau membre.');
-          resetForm();
-          setTimeout(() => navigate('/home'), 3000); // Rediriger après l'ajout réussi
+            const response = await axiosInstance.post('/membres/ajouter', {
+                prenom: firstName,
+                token: token,
+                nom: familyData.family_name || '',
+                date_de_naissance: dateNaissance,
+                id_pere: pereName,
+                id_mere: mereName,
+                statut_matrimonial: isMarried,
+                type_de_lien: role === 'ADMIN' ? null : selectedLinkType,
+                sexe: gender,
+                religion,
+                groupe_sanguin: bloodGroup,
+                electrophorese: electrophoresis,
+                signe_du_fa: signFa,
+                conjoint: conjointName,
+                profession: metier
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+    
+            console.log('Réponse du serveur:', response);
+            setMessage('Ajout réussie! Membre ajouté avec succes.');
+            toast.success('Ajout réussi! Membre ajouté avec succes.');
+            resetForm();
+            setTimeout(() => navigate('/home'), 3000); // Rediriger après l'ajout réussi
         } catch (error) {
-          const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
-          setMessage(errorMessage);
-          console.log(error);
+            const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
+            setMessage(errorMessage);
+            toast.error(errorMessage);
+            console.log(error);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      };
+    };
     const handleCancel = () => {
-        resetForm();
-        navigate('/login');
+        if (window.confirm('Êtes-vous sûr de vouloir annuler ? Toutes les modifications non enregistrées seront perdues.')) {
+            resetForm();
+            navigate('/home'); // Vous pourriez vouloir naviguer vers une autre route si nécessaire
+        }
     };
 
     const resetForm = () => {
@@ -342,12 +350,13 @@ const AddMember = () => {
                     </div>
                 </fieldset>
                 <div className="form-buttons">
-                    <button type="submit">Ajouter</button>
-                    <button type="button" onClick={handleCancel}>Annuler</button>
-                </div>
-            </form>
-        </div>
-    );
+                <button type="submit">Ajouter</button>
+                <button type="button" onClick={handleCancel}>Annuler</button>
+            </div>
+        </form>
+        <ToastContainer />
+    </div>
+);
 };
 
 export default AddMember;

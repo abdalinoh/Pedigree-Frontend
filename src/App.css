@@ -639,3 +639,11 @@ button:disabled {
 .not-found-container .btn-primary {
   font-size: 1.25rem;
 }
+
+
+.card {
+  border-radius: 0.5rem;
+}
+.card-body {
+  padding: 2rem;
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Box, Button, TextField, Typography, MenuItem, CircularProgress } from '@mui/material';
+import { Box, Button, TextField, Typography, MenuItem, CircularProgress, Link } from '@mui/material';
 import countries from '../data/countries.json';
 import { useFamily } from '../context/FamilyContext';
 
@@ -13,6 +13,7 @@ const FamilyRegistration = ({ onRegister, onFamilyName }) => {
   const [messageType, setMessageType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClicked, setIsClicked] = useState(false); // État pour suivre si le bouton a été cliqué
+  const [showLoginLink, setShowLoginLink] = useState(false); // État pour afficher le lien de connexion
   const { setFamilyData } = useFamily();
 
   const HOST = "http://192.168.86.55:5000";
@@ -31,23 +32,24 @@ const FamilyRegistration = ({ onRegister, onFamilyName }) => {
         village
       });
 
-      const { Message, fam_exist, idFamille } = response.data;
+      const { fam_exist, idFamille } = response.data;
 
       if (fam_exist) {
         // La famille existe déjà
-        setMessage(message || 'La famille existe déjà! Vous pouvez maintenant vous inscrire.');
+        setMessage('La famille existe déjà ! Vous pouvez maintenant vous inscrire.');
         setMessageType('error');
         setCountry('');
         setEthnicity('');
         setVillage('');
         onFamilyName(family_name);
         setFamilyData({ family_name, idFamille, fam_exist });
+        setShowLoginLink(true); // Afficher le lien de connexion
         if (onRegister) {
           onRegister(true); // Passer à l'étape suivante
         }
       } else {
         // La famille n'existe pas, enregistrer la nouvelle famille
-        setMessage(message || 'Famille enregistrée avec succès ! Vous pouvez maintenant vous inscrire.');
+        setMessage('Famille enregistrée avec succès ! Vous pouvez maintenant vous inscrire.');
         setMessageType('success');
         if (onRegister) {
           onRegister(true); // Passer à l'étape suivante après enregistrement
@@ -56,7 +58,7 @@ const FamilyRegistration = ({ onRegister, onFamilyName }) => {
         onFamilyName(family_name); // Conserver le nom de famille
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.Message || 'Une erreur est survenue lors de l\'enregistrement de la famille.';
+      const errorMessage = error.response?.data?.message || 'Une erreur est survenue lors de l\'enregistrement de la famille.';
       setMessage(errorMessage);
       setMessageType('error');
     } finally {
@@ -128,6 +130,13 @@ const FamilyRegistration = ({ onRegister, onFamilyName }) => {
           {isSubmitting ? <CircularProgress size={24} sx={{ mr: 1 }} /> : 'Enregistrer la famille'}
         </Button>
       </form>
+      {showLoginLink && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="body1">
+            Vous avez déjà un compte ? <Link href="/login">Se connecter</Link>
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };

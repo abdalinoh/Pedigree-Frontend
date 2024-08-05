@@ -57,7 +57,7 @@ const Register = ({ onRegister }) => {
       console.log('Réponse du serveur:', response);
 
       const {token, idFamille, fam_owner } = response.data;
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('token', token);
       localStorage.setItem('familyId', idFamille);
       localStorage.setItem('isFamOwner', fam_owner);
 
