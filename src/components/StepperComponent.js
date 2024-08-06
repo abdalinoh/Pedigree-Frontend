@@ -11,6 +11,7 @@ const StepperComponent = () => {
   const [isFamilyRegistered, setIsFamilyRegistered] = useState(false);
   const [isMemberRegistered, setIsMemberRegistered] = useState(false);
   const [familyName, setFamilyName] = useState(''); // État pour stocker le nom de famille
+  const [newFamille, setnewFamille] = useState(); // État pour stocker le nom de famille
 
   const handleNext = () => {
     if (activeStep === 0 && isFamilyRegistered) {
@@ -54,10 +55,11 @@ const StepperComponent = () => {
               }
             }} 
             onFamilyName={(name) => setFamilyName(name)} // Conserver le nom de famille
+            setnewFamille={setnewFamille}
           />
         )}
         {activeStep === 1 && (
-          <Register familyName={familyName} onRegister={() => setIsMemberRegistered(true)} />
+          <Register familyName={familyName} newFamille={newFamille} onRegister={() => setIsMemberRegistered(true)} />
         )}
         {activeStep === 2 && <Login onLogin={() => setIsMemberRegistered(true)} />}
         {activeStep === steps.length && (

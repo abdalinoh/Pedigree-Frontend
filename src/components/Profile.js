@@ -1,11 +1,11 @@
-// src/components/Profile.js
-
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Row, Col, Alert, Card, Form } from 'react-bootstrap';
 import axiosInstance from '../services/axiosSetup';
 import { useNavigate } from 'react-router-dom';
+import { useFamily } from '../context/FamilyContext';
 
 const Profile = () => {
+  const { familyData } = useFamily(); // Utilisation du contexte Family
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -85,39 +85,43 @@ const Profile = () => {
             <Card.Header as="h2">Profil de l'Utilisateur</Card.Header>
             <Card.Body>
               {error && <Alert variant="danger">{error}</Alert>}
-              {editMode ? (
-                <Form onSubmit={handleSubmit}>
-                  <Form.Group controlId="formEmail">
-                    <Form.Label>Email :</Form.Label>
-                    <Form.Control
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </Form.Group>
-                  <Button variant="primary" type="submit">
-                    Enregistrer
-                  </Button>
-                  <Button variant="secondary" onClick={handleCancel} className="ms-2">
-                    Annuler
-                  </Button>
-                </Form>
-              ) : (
+              {userData && (
                 <>
-                  <p><strong>Nom:</strong> {userData.user?.nom}</p>
+                  <p><strong>Nom :</strong> {familyData.family_name || 'Non spécifié'}</p> {/* Nom non modifiable */}
                   <p><strong>Prénom:</strong> {userData.user?.prenom}</p>
                   <p><strong>Email:</strong> {userData.user?.email}</p>
                   <p><strong>Rôle:</strong> {userData.role}</p>
-                  {userData.role === 'ADMIN' && (
-                    <Button variant="primary" onClick={handleEdit}>
-                      Modifier Email
-                    </Button>
+                  {editMode ? (
+                    <Form onSubmit={handleSubmit}>
+                      <Form.Group controlId="formEmail">
+                        <Form.Label>Email :</Form.Label>
+                        <Form.Control
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                        />
+                      </Form.Group>
+                      <Button variant="primary" type="submit">
+                        Enregistrer
+                      </Button>
+                      <Button variant="secondary" onClick={handleCancel} className="ms-2">
+                        Annuler
+                      </Button>
+                    </Form>
+                  ) : (
+                    <>
+                      {userData.role === 'ADMIN' && (
+                        <Button variant="primary" onClick={handleEdit}>
+                          Modifier Email
+                        </Button>
+                      )}
+                      <Button variant="secondary" onClick={handleBack} className="ms-2">
+                        Retour
+                      </Button>
+                    </>
                   )}
-                  <Button variant="secondary" onClick={handleBack} className="ms-2">
-                    Retour
-                  </Button>
                 </>
               )}
             </Card.Body>

@@ -106,18 +106,6 @@ const MemberDetail = () => {
                                 <th>Religion</th>
                                 <td>{member.religion || 'Non spécifié'}</td>
                             </tr>
-                            <tr>
-                                <th>Groupe sanguin</th>
-                                <td>{member.groupe_sanguin || 'Non spécifié'}</td>
-                            </tr>
-                            <tr>
-                                <th>Signe du Fâ</th>
-                                <td>{member.signe_du_fa || 'Non spécifié'}</td>
-                            </tr>
-                            <tr>
-                                <th>Électrophorèse</th>
-                                <td>{member.electrophorese || 'Non spécifié'}</td>
-                            </tr>
                         </tbody>
                     </Table>
                     <Button variant="primary" onClick={() => window.history.back()}>Retour</Button>

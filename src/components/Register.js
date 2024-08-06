@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useFamily } from '../context/FamilyContext';
 
-const Register = ({ onRegister }) => {
+const Register = ({ onRegister, newFamille }) => {
   const { familyData } = useFamily();
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,13 +41,16 @@ const Register = ({ onRegister }) => {
 
     try {
       setIsSubmitting(true);
-      const response = await axios.post('http://192.168.86.55:5000/api/utilisateurs/enregistrer', {
+      const response = await axios.post('http://192.168.86.129:5000/api/utilisateurs/enregistrer', {
         nom: familyData.family_name || '', // Utiliser le nom de famille passé en prop
         prenom: firstName,
         email,
         mot_de_passe: password,
-        idFamille: familyData.idFamille,
-        fam_exist: familyData.fam_exist
+        idFamille:familyData.idFamille,
+        newFamille: newFamille,
+        // ...familyData.fam_exist ? familyData.idFamille : newFamille,
+        fam_exist: familyData.fam_exist,
+        
       }, {
         headers: {
           'Content-Type': 'application/json'

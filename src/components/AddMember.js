@@ -89,7 +89,7 @@ const AddMember = () => {
         e.preventDefault();
         setLoading(true);
         const token = localStorage.getItem('token');
-      
+    
         // Vérifier si le membre existe déjà
         const memberExists = await checkIfMemberExists(firstName, dateNaissance, gender);
         if (memberExists) {
@@ -99,7 +99,7 @@ const AddMember = () => {
             setTimeout(() => navigate('/home'), 3000); // Redirection vers la page d'accueil après 3 secondes
             return;
         }
-      
+    
         try {
             const response = await axiosInstance.post('/membres/ajouter', {
                 prenom: firstName,
@@ -109,7 +109,7 @@ const AddMember = () => {
                 id_pere: pereName,
                 id_mere: mereName,
                 statut_matrimonial: isMarried,
-                type_de_lien: role === 'ADMIN' ? null : selectedLinkType,
+                type_de_lien: isAdmin ? null : selectedLinkType,
                 sexe: gender,
                 religion,
                 groupe_sanguin: bloodGroup,
@@ -123,9 +123,11 @@ const AddMember = () => {
                 }
             });
     
+            // Handle response if needed
             console.log('Réponse du serveur:', response);
-            setMessage('Ajout réussie! Membre ajouté avec succes.');
-            toast.success('Ajout réussi! Membre ajouté avec succes.');
+    
+            setMessage('Ajout réussie! Membre ajouté avec succès.');
+            toast.success('Ajout réussi! Membre ajouté avec succès.');
             resetForm();
             setTimeout(() => navigate('/home'), 3000); // Rediriger après l'ajout réussi
         } catch (error) {
@@ -164,7 +166,7 @@ const AddMember = () => {
     const isAdmin = role === 'ADMIN';
 
     return (
-        <div className="register-member-container">
+        <div className="register-member-container"> 
             <h2>Ajouter un membre</h2>
             {message && <p>{message}</p>}
             {isAdmin && (
@@ -283,12 +285,18 @@ const AddMember = () => {
                     {isMarried === 'Marie(e)' && (
                         <div>
                             <label>Nom du conjoint :</label>
-                            <input
-                                type="text"
+                            <select
                                 value={conjointName}
                                 onChange={(e) => setConjointName(e.target.value)}
                                 required
-                            />
+                            >
+                                <option value="">Sélectionner un membre...</option>
+                            {members.map((member) => (
+                                <option key={member._id} value={member._id}>
+                                    {member.prenom} {member.nom}
+                                </option>
+                            ))}
+                            </select>
                         </div>
                     )}
                     <div>

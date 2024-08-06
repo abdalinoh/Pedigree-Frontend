@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
 import DataTable from 'react-data-table-component';
 import moment from 'moment';
-import { Box, MenuItem, FormControl, Select, InputLabel, Typography, CircularProgress } from '@mui/material';
+import { Box, MenuItem, FormControl, Select, InputLabel, Typography, CircularProgress, Button } from '@mui/material';
 import Roles from '../roles/Roles'; // Importer le fichier des rôles
+import { useFamily } from '../context/FamilyContext'; // Importer le contexte de famille
 
 const MemberList = () => {
+  const { familyData } = useFamily(); // Utilisation du contexte Family
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,7 +25,7 @@ const MemberList = () => {
   const columns = [
     {
       name: 'Nom',
-      selector: row => row.nom,
+      selector: row => row.familyData.family_name,
     },
     {
       name: 'Prénom',
@@ -50,20 +52,25 @@ const MemberList = () => {
       cell: row => (
         <div>
           {role && getRolePermissions(role.id).some(permission => permission.id === 'overview') && (
-            <button
+            <Button
               onClick={() => handleDetail(row._id)}
-              className="btn btn-info"
+              variant="contained"
+              color="info"
+              size="small"
+              sx={{ mr: 1 }}
             >
               Détail
-            </button>
+            </Button>
           )}
           {role && getRolePermissions(role.id).some(permission => permission.id === 'update_info') && (
-            <button
+            <Button
               onClick={() => handleEdit(row)}
-              className="btn btn-primary"
+              variant="contained"
+              color="primary"
+              size="small"
             >
               Modifier
-            </button>
+            </Button>
           )}
         </div>
       ),
@@ -120,15 +127,17 @@ const MemberList = () => {
   };
 
   return (
-    <div className="member-list-container">
-      <Typography variant="h6">Liste des Membres</Typography>
+    <Box sx={{ padding: '20px' }}>
+      <Typography variant="h6" gutterBottom>
+        Liste des Membres de la famille {familyData.family_name || 'Non spécifiée'}
+      </Typography>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
           <CircularProgress />
         </Box>
       ) : (
         <>
-          {error && <p>{error}</p>}
+          {error && <Typography color="error">{error}</Typography>}
           <Box sx={{ mb: 2 }}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Sexe</InputLabel>
@@ -146,17 +155,19 @@ const MemberList = () => {
           <DataTable
             columns={columns}
             data={filteredMembers}
-            noDataComponent={<div>Aucun membre trouvé</div>}
+            noDataComponent={<Typography>Aucun membre trouvé</Typography>}
           />
         </>
       )}
-      <button 
-        className="btn btn-secondary btn-go-home"
+      <Button
+        variant="contained"
+        color="secondary"
         onClick={handleGoHome}
+        sx={{ mt: 2 }}
       >
         Retour à l'accueil
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 };
 

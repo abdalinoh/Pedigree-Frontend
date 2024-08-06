@@ -4,7 +4,7 @@ import { Box, Button, TextField, Typography, MenuItem, CircularProgress, Link } 
 import countries from '../data/countries.json';
 import { useFamily } from '../context/FamilyContext';
 
-const FamilyRegistration = ({ onRegister, onFamilyName }) => {
+const FamilyRegistration = ({ onRegister, onFamilyName, setnewFamille}) => {
   const [family_name, setFamilyName] = useState('');
   const [country, setCountry] = useState('');
   const [ethnicity, setEthnicity] = useState('');
@@ -16,7 +16,7 @@ const FamilyRegistration = ({ onRegister, onFamilyName }) => {
   const [showLoginLink, setShowLoginLink] = useState(false); // État pour afficher le lien de connexion
   const { setFamilyData } = useFamily();
 
-  const HOST = "http://192.168.86.55:5000";
+  const HOST = "http://192.168.86.129:5000";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,6 +55,7 @@ const FamilyRegistration = ({ onRegister, onFamilyName }) => {
           onRegister(true); // Passer à l'étape suivante après enregistrement
         }
         setFamilyData({ family_name, idFamille, fam_exist });
+        setnewFamille(response.data.newFamille);
         onFamilyName(family_name); // Conserver le nom de famille
       }
     } catch (error) {
