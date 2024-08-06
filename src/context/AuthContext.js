@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loginError, setLoginError] = useState(null);
 
   const HOST = "http://192.168.86.129:5000"; // Adresse de votre backend
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await axios.get(`${HOST}/api/UserRoles/All-Permision`, {
+          const response = await axios.get(`${HOST}/api/UserRoles/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const { user, fam_owner } = response.data;
@@ -40,8 +41,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       setUser(user);
       setRole(fam_owner ? 'ADMIN' : 'USER');
+      setLoginError(null); // Clear any previous errors
     } catch (error) {
       console.error('Erreur lors de la connexion', error);
+      setLoginError('Échec de la connexion. Veuillez réessayer.');
     }
   };
 
@@ -52,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, role, loading, login, logout, loginError }}>
       {children}
     </AuthContext.Provider>
   );
