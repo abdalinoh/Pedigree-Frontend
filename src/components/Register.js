@@ -41,7 +41,7 @@ const Register = ({ onRegister, newFamille }) => {
 
     try {
       setIsSubmitting(true);
-      const response = await axios.post('http://192.168.86.129:5000/api/utilisateurs/enregistrer', {
+      const response = await axios.post('http://192.168.86.129:5000/api/auth/enregistrer', {
         nom: familyData.family_name || '', // Utiliser le nom de famille passé en prop
         prenom: firstName,
         email,
@@ -85,26 +85,26 @@ const Register = ({ onRegister, newFamille }) => {
     }
   };
 
-  const handleEmailBlur = async () => {
-    if (!email) return;
+  // const handleEmailBlur = async () => {
+  //   if (!email) return;
 
-    try {
-      const response = await axios.post('http://192.168.86.55:5000/api/utilisateurs/verifier-email', { email }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+  //   try {
+  //     const response = await axios.post('http://192.168.86.55:5000/api/utilisateurs/verifier-email', { email }, {
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       }
+  //     });
 
-      if (response.data.exists) {
-        setMessage('Email déjà utilisé. Veuillez en choisir un autre.');
-        setMessageType('error');
-      } else {
-        setMessage('');
-      }
-    } catch (error) {
-      console.log('Erreur lors de la vérification de l\'email:', error);
-    }
-  };
+  //     if (response.data.exists) {
+  //       setMessage('Email déjà utilisé. Veuillez en choisir un autre.');
+  //       setMessageType('error');
+  //     } else {
+  //       setMessage('');
+  //     }
+  //   } catch (error) {
+  //     console.log('Erreur lors de la vérification de l\'email:', error);
+  //   }
+  // };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -148,7 +148,7 @@ const Register = ({ onRegister, newFamille }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onBlur={handleEmailBlur}
+              // onBlur={handleEmailBlur}
               required
               placeholder='ex: nom@gmail.com'
               autoComplete='username'

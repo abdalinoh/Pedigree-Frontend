@@ -1,4 +1,3 @@
-// src/context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -7,8 +6,8 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
+  const [isMember, setIsMember] = useState(false); // Ajouté pour vérifier si l'utilisateur est membre
   const [loading, setLoading] = useState(true);
-  const [loginError, setLoginError] = useState(null);
 
   const HOST = "http://192.168.86.129:5000"; // Adresse de votre backend
 
@@ -17,12 +16,18 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await axios.get(`${HOST}/api/UserRoles/`, {
+          const response = await axios.get(`${HOST}/api/utils/All-Permision`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const { user, fam_owner } = response.data;
           setUser(user);
           setRole(fam_owner ? 'ADMIN' : 'USER');
+
+          // Vérifier si l'utilisateur est ajouté en tant que membre
+          // const memberResponse = await axios.get(`${HOST}/api/user/member/`, {
+          //   headers: { Authorization: `Bearer ${token}` }
+          // });
+          // setIsMember(memberResponse.data.isMember);
         }
       } catch (error) {
         console.error('Erreur lors de la récupération de l\'utilisateur', error);
@@ -36,15 +41,19 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const response = await axios.post(`${HOST}/api/utilisateurs/connexion`, credentials);
+      const response = await axios.post(`${HOST}/api/auth/connexion`, credentials);
       const { token, user, fam_owner } = response.data;
       localStorage.setItem('token', token);
       setUser(user);
       setRole(fam_owner ? 'ADMIN' : 'USER');
-      setLoginError(null); // Clear any previous errors
+
+      // Vérifier si l'utilisateur est ajouté en tant que membre
+      const memberResponse = await axios.get(`${HOST}/api/user/member/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsMember(memberResponse.data.isMember);
     } catch (error) {
       console.error('Erreur lors de la connexion', error);
-      setLoginError('Échec de la connexion. Veuillez réessayer.');
     }
   };
 
@@ -52,10 +61,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
     setRole(null);
+    setIsMember(false); // Réinitialiser l'état de membre lors de la déconnexion
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, login, logout, loginError }}>
+    <AuthContext.Provider value={{ user, role, isMember, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

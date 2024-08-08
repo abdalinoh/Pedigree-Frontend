@@ -9,7 +9,7 @@ const useLinkTypes = () => {
     useEffect(() => {
         const fetchLinkTypes = async () => {
             try {
-                const response = await axiosInstance.get('/liens/types'); // Endpoint pour récupérer les types de lien
+                const response = await axiosInstance.get('/utils/typesDeLien'); // Endpoint pour récupérer les types de lien
                 setLinkTypes(response.data.data); // Adapter selon la structure de réponse
             } catch (error) {
                 setError('Erreur lors de la récupération des types de lien.');

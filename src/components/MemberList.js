@@ -1,26 +1,26 @@
+// src/components/MemberList.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
 import DataTable from 'react-data-table-component';
 import moment from 'moment';
 import { Box, MenuItem, FormControl, Select, InputLabel, Typography, CircularProgress, Button } from '@mui/material';
-import Roles from '../roles/Roles'; // Importer le fichier des rôles
-import { useFamily } from '../context/FamilyContext'; // Importer le contexte de famille
+// import Roles from '../roles/Roles'; // Importer le fichier des rôles
+import { useAuth } from '../context/AuthContext'; // Utiliser le contexte d'authentification
 
 const MemberList = () => {
-  const { familyData } = useFamily(); // Utilisation du contexte Family
+  const { role } = useAuth(); // Récupérer le rôle de l'utilisateur depuis le contexte
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSex, setSelectedSex] = useState('');
-  const [role, setRole] = useState(null); // Rôle de l'utilisateur
   const navigate = useNavigate();
 
-  // Obtenir le rôle de l'utilisateur et définir les permissions
-  const getRolePermissions = (roleId) => {
-    const roleConfig = Roles.find(role => role.role.id === roleId);
-    return roleConfig ? roleConfig.permissions : [];
-  };
+  // Obtenir les permissions du rôle
+  // const getRolePermissions = (roleId) => {
+  //   const roleConfig = Roles.find(role => role.role.id === roleId);
+  //   return roleConfig ? roleConfig.permissions : [];
+  // };
 
   const columns = [
     {
@@ -51,18 +51,16 @@ const MemberList = () => {
       name: 'Actions',
       cell: row => (
         <div>
-          {role && getRolePermissions(role.id).some(permission => permission.id === 'overview') && (
-            <Button
-              onClick={() => handleDetail(row._id)}
-              variant="contained"
-              color="info"
-              size="small"
-              sx={{ mr: 1 }}
-            >
-              Détail
-            </Button>
-          )}
-          {role && getRolePermissions(role.id).some(permission => permission.id === 'update_info') && (
+          <Button
+            onClick={() => handleDetail(row._id)}
+            variant="contained"
+            color="info"
+            size="small"
+            sx={{ mr: 1 }}
+          >
+            Détail
+          </Button>
+          {role && role.id === 'ADMIN' && (
             <Button
               onClick={() => handleEdit(row)}
               variant="contained"
@@ -81,7 +79,7 @@ const MemberList = () => {
     const fetchMembers = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`/recuperer/${selectedSex}`);
+        const response = await axiosInstance.get(`utils/recuperer/${selectedSex}`);
         if (response.data.length === 0) {
           setError('Aucun membre trouvé.');
         } else {
@@ -96,19 +94,6 @@ const MemberList = () => {
 
     fetchMembers();
   }, [selectedSex]);
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      try {
-        const response = await axiosInstance.get('/All-Permision'); // Endpoint pour obtenir le rôle de l'utilisateur
-        setRole(response.data);
-      } catch (error) {
-        console.error('Erreur lors de la récupération du rôle', error);
-      }
-    };
-
-    fetchUserRole();
-  }, []);
 
   const handleGoHome = () => {
     navigate('/home');
@@ -129,7 +114,7 @@ const MemberList = () => {
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h6" gutterBottom>
-        Liste des Membres de la famille {familyData.family_name || 'Non spécifiée'}
+        Liste des Membres de la famille
       </Typography>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100vh">

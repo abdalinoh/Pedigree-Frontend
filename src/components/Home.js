@@ -1,12 +1,11 @@
-// src/components/Home.js
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Navbar, Nav, Container, Button } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
 
 const Home = () => {
-  const { role, logout } = useAuth();
+  const { role, isMember, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -45,6 +44,11 @@ const Home = () => {
               <Button as={Link} to="/family-diagram" className="home-button" variant="primary">Arbres Générés</Button>
               <Button onClick={handleLogout} className="home-button" variant="danger">Quitter</Button>
             </div>
+            {!isMember && (
+              <Alert variant="warning" className="mt-3">
+                Vous n'avez pas encore complété votre ajout en tant que membre. <Link to="/profile">Complétez votre profil ici</Link>.
+              </Alert>
+            )}
           </section>
         </Container>
       </main>

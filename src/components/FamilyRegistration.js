@@ -25,7 +25,7 @@ const FamilyRegistration = ({ onRegister, onFamilyName, setnewFamille}) => {
 
     try {
       // Vérifiez si la famille existe déjà
-      const response = await axios.post(`${HOST}/api/Familly/create`, {
+      const response = await axios.post(`${HOST}/api/auth/create`, {
         family_name,
         country,
         ethnicity,

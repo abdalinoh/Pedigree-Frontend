@@ -23,35 +23,17 @@ const AddMember = () => {
     const [members, setMembers] = useState([]);
     const [linkTypes, setLinkTypes] = useState([]);
     const [selectedLinkType, setSelectedLinkType] = useState('');
-    const [role, setRole] = useState(null);
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     
     
     const navigate = useNavigate(); 
 
-    useEffect(() => {
-        const fetchRole = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axiosInstance.get('/All-Permision', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                setRole(response.data.role);
-            } catch (error) {
-                console.error('Erreur lors de la récupération du rôle de l\'utilisateur:', error);
-            }
-        };
-    
-        fetchRole();
-    }, []);
 
     useEffect(() => {
         const fetchLinkTypes = async () => {
             try {
-                const response = await axiosInstance.get('/liens/types');
+                const response = await axiosInstance.get('/utils/typesDeLien');
                 setLinkTypes(response.data);
             } catch (error) {
                 console.log('Erreur lors de la récupération des types de liens:', error);
@@ -64,7 +46,7 @@ const AddMember = () => {
     useEffect(() => {
         const fetchMembers = async () => {
             try {
-                const response = await axiosInstance.get('/membres/tous');
+                const response = await axiosInstance.get('/user/member/tous');
                 setMembers(response.data);
             } catch (error) {
                 console.error('Erreur lors de la récupération des membres', error);
@@ -75,7 +57,7 @@ const AddMember = () => {
 
     const checkIfMemberExists = async (firstName, dateNaissance) => {
         try {
-          const response = await axiosInstance.get('/membres/existe', {
+          const response = await axiosInstance.get('/user/member/tous', {
             params: { prenom: firstName, date_de_naissance: dateNaissance, sexe: gender }
           });
           return response.data.exists; // Supposons que la réponse contient un champ 'exists'
@@ -101,7 +83,7 @@ const AddMember = () => {
         }
     
         try {
-            const response = await axiosInstance.post('/membres/ajouter', {
+            const response = await axiosInstance.post('admin/member/ajouter', {
                 prenom: firstName,
                 token: token,
                 nom: familyData.family_name || '',
@@ -109,7 +91,7 @@ const AddMember = () => {
                 id_pere: pereName,
                 id_mere: mereName,
                 statut_matrimonial: isMarried,
-                type_de_lien: isAdmin ? null : selectedLinkType,
+                type_de_lien: selectedLinkType,
                 sexe: gender,
                 religion,
                 groupe_sanguin: bloodGroup,
@@ -163,7 +145,8 @@ const AddMember = () => {
         setMessage('');
     };
 
-    const isAdmin = role === 'ADMIN';
+   // Assumer que l'admin est toujours connecté
+   const isAdmin = true; // Cette valeur devrait être définie en fonction de la logique d'authentification réelle
 
     return (
         <div className="register-member-container"> 

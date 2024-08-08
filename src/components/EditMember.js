@@ -34,8 +34,8 @@ const EditMember = () => {
             try {
                 const [memberResponse, linkTypesResponse, membersResponse] = await Promise.all([
                     axiosInstance.get(`/membres/afficher/${id}`),
-                    axiosInstance.get('/liens/types'),
-                    axiosInstance.get('/membres/tous')
+                    axiosInstance.get('/utils/typesDeLien'),
+                    axiosInstance.get('/user/member/tous')
                 ]);
     
                 if (isMounted) {
@@ -78,7 +78,7 @@ const EditMember = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.put(`/membres/modifier/${id}`, {
+            await axiosInstance.put(`admin/member/modifier/${id}`, {
                 prenom: firstName,
                 nom: familyData.family_name || '',
                 date_de_naissance: moment(dateNaissance).format('DD/MM/YYYY'),
