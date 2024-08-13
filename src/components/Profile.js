@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Row, Col, Alert, Card, Form } from 'react-bootstrap';
+import { Button, Container, Row, Col, Alert, Card, Form, Spinner } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
-import { useNavigate } from 'react-router-dom';
 import { useFamily } from '../context/FamilyContext';
 
 const Profile = () => {
-  const { familyData } = useFamily(); // Utilisation du contexte Family
+  const { familyData } = useFamily(); // Utilisation du contexte Family (assurez-vous qu'il est utilisé)
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,7 +24,7 @@ const Profile = () => {
             Authorization: `Bearer ${token}`
           }
         });
-        setUserData(userResponse.data);
+        setUserData(userResponse.data.user);        
         setFormData({
           email: userResponse.data.user?.email || '',
         });
@@ -75,7 +75,14 @@ const Profile = () => {
 
   const handleBack = () => navigate('/home');
 
-  if (loading) return <p>Chargement des données du profil...</p>;
+  if (loading) {
+    return (
+      <Container className="my-4 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p>Chargement des données du profil...</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="my-4">
@@ -87,10 +94,10 @@ const Profile = () => {
               {error && <Alert variant="danger">{error}</Alert>}
               {userData && (
                 <>
-                  <p><strong>Nom :</strong> {familyData.family_name || 'Non spécifié'}</p> {/* Nom non modifiable */}
-                  <p><strong>Prénom:</strong> {userData.user?.prenom}</p>
-                  <p><strong>Email:</strong> {userData.user?.email}</p>
-                  <p><strong>Rôle:</strong> {userData.role}</p>
+                  <p><strong>Nom :</strong> {userData?.nom || 'Non spécifié'}</p> {/* Nom non modifiable */}
+                  <p><strong>Prénom :</strong> {userData?.prenom}</p>
+                  <p><strong>Email :</strong> {userData?.email}</p>
+                  <p><strong>Rôle :</strong> {userData.role}</p>
                   {editMode ? (
                     <Form onSubmit={handleSubmit}>
                       <Form.Group controlId="formEmail">
@@ -113,9 +120,12 @@ const Profile = () => {
                   ) : (
                     <>
                       {userData.role === 'ADMIN' && (
-                        <Button variant="primary" onClick={handleEdit}>
-                          Modifier Email
-                        </Button>
+                        <>
+                          <Link as={Link} to={`/user-member`}>Cliquez sur ce lien pour completer ou modifier votre profile</Link>
+                          <Button variant="primary" onClick={handleEdit}>
+                            Modifier Email
+                          </Button>
+                        </>
                       )}
                       <Button variant="secondary" onClick={handleBack} className="ms-2">
                         Retour

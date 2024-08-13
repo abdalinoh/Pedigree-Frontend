@@ -41,7 +41,7 @@ const Register = ({ onRegister, newFamille }) => {
 
     try {
       setIsSubmitting(true);
-      const response = await axios.post('http://192.168.86.55:5000/api/auth/enregistrer', {
+      const response = await axios.post('http://192.168.86.129:5000/api/auth/enregistrer', {
         nom: familyData.family_name || '', // Utiliser le nom de famille passé en prop
         prenom: firstName,
         email,
@@ -89,7 +89,7 @@ const Register = ({ onRegister, newFamille }) => {
   //   if (!email) return;
 
   //   try {
-  //     const response = await axios.post('http://192.168.86.55:5000/api/utilisateurs/verifier-email', { email }, {
+  //     const response = await axios.post('http://192.168.86.129:5000/api/utilisateurs/verifier-email', { email }, {
   //       headers: {
   //         'Content-Type': 'application/json'
   //       }

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isMember, setIsMember] = useState(false); // Ajouté pour vérifier si l'utilisateur est membre
   const [loading, setLoading] = useState(true);
 
-  const HOST = "http://192.168.86.55:5000"; // Adresse de votre backend
+  const HOST = "http://192.168.86.129:5000"; // Adresse de votre backend
 
   useEffect(() => {
     const fetchUser = async () => {

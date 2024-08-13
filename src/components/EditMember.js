@@ -33,7 +33,7 @@ const EditMember = () => {
         const fetchData = async () => {
             try {
                 const [memberResponse, linkTypesResponse, membersResponse] = await Promise.all([
-                    axiosInstance.get(`/membres/afficher/${id}`),
+                    axiosInstance.get(`/admin/member/details/${id}`),
                     axiosInstance.get('/utils/typesDeLien'),
                     axiosInstance.get('/user/member/tous')
                 ]);

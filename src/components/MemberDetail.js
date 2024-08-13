@@ -17,7 +17,7 @@ const MemberDetail = () => {
         const fetchMemberDetails = async () => {
             try {
                 setLoading(true);
-                const response = await axiosInstance.get(`/membres/afficher/${id}`);
+                const response = await axiosInstance.get(`/admin/member/details/${id}`);
                 setMember(response.data.data);
             } catch (error) {
                 console.error('Erreur lors de la récupération des détails du membre', error);

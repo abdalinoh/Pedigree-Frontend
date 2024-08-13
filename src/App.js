@@ -21,8 +21,10 @@ import { FamilyProvider } from './context/FamilyContext'; // Importer FamilyProv
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import RoleBasedRoute from './components/RoleBasedRoute';
+import MemberUser from './components/UserAddToMember';
 
 import './App.css';
+import UserMember from './components/UserAddToMember';
 
 function App() {
   return (
@@ -90,6 +92,13 @@ function App() {
               <Route path="/unauthorized" element={<Unauthorized />} />
               {/* Route pour la page 404 */}
               <Route path="*" element={<NotFound />} />
+              <Route path="/user-member" element={
+                <ProtectedRoute>
+                  <RoleBasedRoute allowedRoles={['admin', 'user']}>
+                    <UserMember />
+                  </RoleBasedRoute>
+                </ProtectedRoute>
+              } />
             </Routes>
           </div>
         </FamilyProvider>

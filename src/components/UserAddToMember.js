@@ -6,10 +6,9 @@ import { useFamily } from '../context/FamilyContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const AddMember = () => {
+const UserMember = () => {
     const { familyData } = useFamily();
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    const [userData, setUserData] = useState('');
     const [dateNaissance, setDateNaissance] = useState('');
     const [pereName, setPereName] = useState();
     const [mereName, setMereName] = useState();
@@ -22,27 +21,11 @@ const AddMember = () => {
     const [conjointName, setConjointName] = useState('');
     const [metier, setMetier] = useState('');
     const [members, setMembers] = useState([]);
-    const [linkTypes, setLinkTypes] = useState([]);
-    const [selectedLinkType, setSelectedLinkType] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     
     
     const navigate = useNavigate(); 
-
-
-    useEffect(() => {
-        const fetchLinkTypes = async () => {
-            try {
-                const response = await axiosInstance.get('/utils/typesDeLien');
-                setLinkTypes(response.data);
-            } catch (error) {
-                console.log('Erreur lors de la récupération des types de liens:', error);
-            }
-        };
-    
-        fetchLinkTypes();
-    }, []);
 
     useEffect(() => {
         const fetchMembers = async () => {
@@ -55,6 +38,24 @@ const AddMember = () => {
         };
         fetchMembers();
     }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            const userResponse = await axiosInstance.get('/utils/profile', {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            setUserData(userResponse.data.user);        
+          } catch (error) {
+            console.error('Erreur lors de la récupération des données:', error.response?.data || error.message);
+          }
+        };
+    
+        fetchData();
+      }, []);
 
     const checkIfMemberExists = async (firstName, dateNaissance) => {
         try {
@@ -71,10 +72,9 @@ const AddMember = () => {
       const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const token = localStorage.getItem('token');
     
         // Vérifier si le membre existe déjà
-        const memberExists = await checkIfMemberExists(firstName, dateNaissance, gender);
+        const memberExists = await checkIfMemberExists(userData.prenom, dateNaissance, gender);
         if (memberExists) {
             setMessage('Un membre avec ces informations existe déjà.');
             toast.error('Un membre avec ces informations existe déjà.');
@@ -84,21 +84,21 @@ const AddMember = () => {
         }
     
         try {
-            const response = await axiosInstance.post('admin/member/ajouter', {
-                prenom: firstName,
+            const token = localStorage.getItem('token');
+            const response = await axiosInstance.post('admin/member/new-member', {
+                prenom: userData?.prenom,
                 token: token,
-                nom: lastName,
+                nom: userData?.nom,
                 date_de_naissance: dateNaissance,
                 id_pere: pereName,
                 id_mere: mereName,
                 statut_matrimonial: isMarried,
-                type_de_lien: selectedLinkType,
                 sexe: gender,
                 religion,
                 groupe_sanguin: bloodGroup,
                 electrophorese: electrophoresis,
                 signe_du_fa: signFa,
-                id_conjoint: conjointName,
+                conjoint: conjointName,
                 profession: metier
             }, {
                 headers: {
@@ -109,8 +109,8 @@ const AddMember = () => {
             // Handle response if needed
             console.log('Réponse du serveur:', response);
     
-            setMessage('Ajout réussie! Membre ajouté avec succès.');
-            toast.success('Ajout réussi! Membre ajouté avec succès.');
+            setMessage('Ajout réussie! Votre profil a été completer avec succès.');
+            toast.success('Ajout réussi! Votre profil a été completer avec succès.');
             resetForm();
             setTimeout(() => navigate('/home'), 3000); // Rediriger après l'ajout réussi
         } catch (error) {
@@ -130,8 +130,6 @@ const AddMember = () => {
     };
 
     const resetForm = () => {
-        setFirstName('');
-        setLastName('');
         setDateNaissance('');
         setPereName('');
         setMereName('');
@@ -142,7 +140,6 @@ const AddMember = () => {
         setElectrophoresis('');
         setSignFA('');
         setConjointName('');
-        setSelectedLinkType('');
         setMetier('');
         setMessage('');
     };
@@ -152,13 +149,8 @@ const AddMember = () => {
 
     return (
         <div className="register-member-container"> 
-            <h2>Ajouter un membre</h2>
+            <h2>Complétez vos informations</h2>
             {message && <p>{message}</p>}
-            {isAdmin && (
-                <Alert variant="success">
-                    Vous êtes connecté en tant qu'Administrateur.
-                </Alert>
-            )}
             {loading && <Spinner animation="border" />}
             <form onSubmit={handleSubmit}>
                 <fieldset>
@@ -167,18 +159,18 @@ const AddMember = () => {
                         <label>Nom :</label>
                         <input
                             type="text"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
+                            value={userData?.nom}
                             required
+                            readOnly
                         />
                     </div>
                     <div>
                         <label>Prénom :</label>
                         <input
                             type="text"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
+                            value={userData?.prenom}
                             required
+                            readOnly
                         />
                     </div>
                     <div>
@@ -236,23 +228,6 @@ const AddMember = () => {
                 </fieldset>
                 <fieldset>
                     <legend>Autres informations</legend>
-  
-                    <Form.Group>
-                        <Form.Label>Type de lien :</Form.Label>
-                        <Form.Control
-                            as="select"
-                            value={selectedLinkType}
-                            onChange={(e) => setSelectedLinkType(e.target.value)}
-                            required
-                        >
-                            <option value="">Sélectionner un type de lien...</option>
-                            {linkTypes.map((type) => (
-                                <option key={type} value={type}>
-                                    {type}
-                                </option>
-                            ))}
-                        </Form.Control>
-                    </Form.Group>
                     <div>
                         <label>État matrimonial :</label>
                         <select
@@ -273,6 +248,7 @@ const AddMember = () => {
                             <select
                                 value={conjointName}
                                 onChange={(e) => setConjointName(e.target.value)}
+                                required
                             >
                                 <option value="">Sélectionner un membre...</option>
                             {members?.map((member) => (
@@ -351,4 +327,4 @@ const AddMember = () => {
 );
 };
 
-export default AddMember;
+export default UserMember;

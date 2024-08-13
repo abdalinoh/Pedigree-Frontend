@@ -243,7 +243,6 @@ class GenogramLayout extends go.LayeredDigraphLayout {
 const GoJSDiagram = () => {
   const diagramRef = useRef(null);
   const [members, setMembers] = useState('');
-  const [message, setMessage] = useState('');
   const [familyNode, setFamilyNode] = useState([]);
 
   useEffect(() => {
@@ -255,11 +254,12 @@ const GoJSDiagram = () => {
             }
 
             setMembers(response.data);
+            console.log('jjnnkgroigr,g', response.data, 'k ngrigor,ogrg')
             setFamilyNode(response.data.map(member => ({
               key: member._id,
               pere_id: member?.pere?._id,
               mere_id: member?.mere?._id,
-              lien: member.lien.type_de_lien,
+              lien: (member.lien?.type_de_lien === undefined) ? 'Creator' : member.lien?.type_de_lien,
               date_de_naissance: member.date_de_naissance,
               name: member.nom,
               prenom: member.prenom,
@@ -376,6 +376,7 @@ const GoJSDiagram = () => {
     );
 
     setupDiagram(diagram, familyNode, 4);
+
     function setupDiagram(diagram, array, focusId) {
         diagram.model =
           new go.GraphLinksModel({
