@@ -1,7 +1,7 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Register from './components/register';
+import Register from './components/Register';
 import Login from './components/Login';
 import Home from './components/Home';
 import ProtectedRoute from './components/ProtectedRoute'; // Remplacer PrivateRoute par ProtectedRoute
@@ -48,21 +48,21 @@ function App() {
               } />
               <Route path="/add-member" element={
                 <ProtectedRoute>
-                  <RoleBasedRoute allowedRoles={['Admin']}>
+                  <RoleBasedRoute allowedRoles={['admin']}>
                     <AddMember />
                   </RoleBasedRoute>
                 </ProtectedRoute>
               } />
               <Route path="/members-list" element={
                 <ProtectedRoute>
-                  <RoleBasedRoute allowedRoles={['Admin', 'User']}>
+                  <RoleBasedRoute allowedRoles={['admin', 'user']}>
                     <MemberList />
                   </RoleBasedRoute>
                 </ProtectedRoute>
               } />
               <Route path="/detail/:id" element={
                 <ProtectedRoute>
-                  <RoleBasedRoute allowedRoles={['Admin', 'User']}>
+                  <RoleBasedRoute allowedRoles={['admin', 'user']}>
                     <MemberDetail />
                   </RoleBasedRoute>
                 </ProtectedRoute>
@@ -74,14 +74,14 @@ function App() {
               } />
               <Route path="/family-diagram" element={
                 <ProtectedRoute>
-                  <RoleBasedRoute allowedRoles={['Admin']}>
+                  <RoleBasedRoute allowedRoles={['admin']}>
                     <FamilyDiagram />
                   </RoleBasedRoute>
                 </ProtectedRoute>
               } />
               <Route path="/modifier/:id" element={
                 <ProtectedRoute>
-                  <RoleBasedRoute allowedRoles={['Admin']}>
+                  <RoleBasedRoute allowedRoles={['admin']}>
                     <EditMember />
                   </RoleBasedRoute>
                 </ProtectedRoute>

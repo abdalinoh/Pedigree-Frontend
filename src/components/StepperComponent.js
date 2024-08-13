@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Stepper, Step, StepLabel, Typography } from '@mui/material';
 import FamilyRegistration from './FamilyRegistration';
-import Register from './register'; // Assurez-vous que le nom du fichier est correct
+import Register from './Register'; // Assurez-vous que le nom du fichier est correct
 import Login from './Login';
 
 const steps = ['Enregistrement de la Famille', 'Inscription', 'Connexion'];

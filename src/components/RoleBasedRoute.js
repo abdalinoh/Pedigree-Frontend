@@ -10,7 +10,7 @@ const RoleBasedRoute = ({ children, allowedRoles }) => {
     return <div>Loading...</div>; // Affichez un chargement pendant que les données sont récupérées
   }
 
-  if (!allowedRoles.includes(role)) {
+  if (!allowedRoles.includes(role.toLowerCase())) {
     return <Navigate to="/unauthorized" />; // Redirige vers une page non autorisée si le rôle ne correspond pas
   }
 

@@ -9,9 +9,10 @@ import 'react-toastify/dist/ReactToastify.css';
 const AddMember = () => {
     const { familyData } = useFamily();
     const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [dateNaissance, setDateNaissance] = useState('');
-    const [pereName, setPereName] = useState('');
-    const [mereName, setMereName] = useState('');
+    const [pereName, setPereName] = useState();
+    const [mereName, setMereName] = useState();
     const [isMarried, setIsMarried] = useState('');
     const [gender, setGender] = useState('');
     const [religion, setReligion] = useState('');
@@ -86,7 +87,7 @@ const AddMember = () => {
             const response = await axiosInstance.post('admin/member/ajouter', {
                 prenom: firstName,
                 token: token,
-                nom: familyData.family_name || '',
+                nom: lastName,
                 date_de_naissance: dateNaissance,
                 id_pere: pereName,
                 id_mere: mereName,
@@ -130,6 +131,7 @@ const AddMember = () => {
 
     const resetForm = () => {
         setFirstName('');
+        setLastName('');
         setDateNaissance('');
         setPereName('');
         setMereName('');
@@ -165,8 +167,9 @@ const AddMember = () => {
                         <label>Nom :</label>
                         <input
                             type="text"
-                            value={familyData.family_name || ''}
-                            readOnly
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
                         />
                     </div>
                     <div>
@@ -187,7 +190,7 @@ const AddMember = () => {
                         >
                             <option value="">Sélectionner...</option>
                             <option value="Masculin">Masculin</option>
-                            <option value="Féminin">Féminin</option>
+                            <option value="Feminin">Féminin</option>
                         </select>
                     </div>
                     <div>
@@ -209,7 +212,7 @@ const AddMember = () => {
                             onChange={(e) => setPereName(e.target.value)}
                         >
                             <option value="">Sélectionner un membre...</option>
-                            {members.map((member) => (
+                            {members?.map((member) => (
                                 <option key={member._id} value={member._id}>
                                     {member.prenom} {member.nom}
                                 </option>
@@ -223,7 +226,7 @@ const AddMember = () => {
                             onChange={(e) => setMereName(e.target.value)}
                         >
                             <option value="">Sélectionner un membre...</option>
-                            {members.map((member) => (
+                            {members?.map((member) => (
                                 <option key={member._id} value={member._id}>
                                     {member.prenom} {member.nom}
                                 </option>
@@ -233,7 +236,7 @@ const AddMember = () => {
                 </fieldset>
                 <fieldset>
                     <legend>Autres informations</legend>
-                    {!isAdmin && (
+  
                     <Form.Group>
                         <Form.Label>Type de lien :</Form.Label>
                         <Form.Control
@@ -250,7 +253,6 @@ const AddMember = () => {
                             ))}
                         </Form.Control>
                     </Form.Group>
-                )}
                     <div>
                         <label>État matrimonial :</label>
                         <select
@@ -274,7 +276,7 @@ const AddMember = () => {
                                 required
                             >
                                 <option value="">Sélectionner un membre...</option>
-                            {members.map((member) => (
+                            {members?.map((member) => (
                                 <option key={member._id} value={member._id}>
                                     {member.prenom} {member.nom}
                                 </option>

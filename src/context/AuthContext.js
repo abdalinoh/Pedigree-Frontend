@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isMember, setIsMember] = useState(false); // Ajouté pour vérifier si l'utilisateur est membre
   const [loading, setLoading] = useState(true);
 
-  const HOST = "http://192.168.86.129:5000"; // Adresse de votre backend
+  const HOST = "http://192.168.86.55:5000"; // Adresse de votre backend
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -42,16 +42,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await axios.post(`${HOST}/api/auth/connexion`, credentials);
-      const { token, user, fam_owner } = response.data;
+      const token = response.data?.data?.token;
+      const user = response.data?.utilisateur;
+      const fam_owner = response.data?.fam_owner;
       localStorage.setItem('token', token);
       setUser(user);
-      setRole(fam_owner ? 'ADMIN' : 'USER');
+      setRole(user?.role);
 
       // Vérifier si l'utilisateur est ajouté en tant que membre
-      const memberResponse = await axios.get(`${HOST}/api/user/member/`, {
+      /*const memberResponse = await axios.get(`${HOST}/api/user/member/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setIsMember(memberResponse.data.isMember);
+      setIsMember(memberResponse.data.isMember);*/
     } catch (error) {
       console.error('Erreur lors de la connexion', error);
     }

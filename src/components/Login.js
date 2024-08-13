@@ -7,6 +7,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { Spinner } from 'react-bootstrap';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
+import Home from './Home';
 
 const Login = () => {
   const { login, loginError, user, loading } = useAuth();
@@ -19,14 +20,14 @@ const Login = () => {
   useEffect(() => {
     if (isLoggedIn || user) {
       document.body.classList.add('fade-out');
-      setTimeout(() => navigate('/home'), 3000);
+      setTimeout(() => navigate('/Home'), 3000);
     }
   }, [isLoggedIn, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login({ email, password });
+      await login({ email, mot_de_passe: password });
       setIsLoggedIn(true);
       toast.success('Connexion réussie ! Vous serez redirigé vers la page d\'accueil.');
     } catch (error) {

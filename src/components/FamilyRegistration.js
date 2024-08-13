@@ -16,7 +16,7 @@ const FamilyRegistration = ({ onRegister, onFamilyName, setnewFamille}) => {
   const [showLoginLink, setShowLoginLink] = useState(false); // État pour afficher le lien de connexion
   const { setFamilyData } = useFamily();
 
-  const HOST = "http://192.168.86.129:5000";
+  const HOST = "http://192.168.86.55:5000";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
