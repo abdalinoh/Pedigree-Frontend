@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as go from 'gojs';
 import axiosInstance from '../services/axiosSetup';
-import { node } from 'prop-types';
 
 const STROKE_WIDTH = 3;
 const CORNER_ROUNDNESS = 12;
@@ -242,29 +241,35 @@ class GenogramLayout extends go.LayeredDigraphLayout {
 
 const GoJSDiagram = () => {
   const diagramRef = useRef(null);
-  const [members, setMembers] = useState('');
   const [familyNode, setFamilyNode] = useState([]);
+  const tab = [
+    { key: 111111111, lien_type_de_lien: "Membre", name: "JAMES", prenom: "Alice", ux: 0, sexe: "F", date_de_naissance: "1978-01-23"},
+    { key: 0, lien_type_de_lien: "Membre", name: "JAMES", prenom: "Aaron", sexe: "M", date_de_naissance: '1978-01-23'},
+      { key: 2, lien_type_de_lien: "Membre", name: "JAMES", prenom: "Bob", sexe:"M", pere_id: 0, mere_id: 111111111, date_de_naissance: "1978-01-23"}
+    ];
 
   useEffect(() => {
     const fetchMembers = async () => {
         try {
             const response = await axiosInstance.get('/tree/generation');
-            if (!response.data) {
-              throw new Error('Aucune donnée reçue');
-            }
 
-            setMembers(response.data);
-            console.log('jjnnkgroigr,g', response.data, 'k ngrigor,ogrg')
-            setFamilyNode(response.data.map(member => ({
-              key: member._id,
-              pere_id: member?.pere?._id,
-              mere_id: member?.mere?._id,
-              lien: (member.lien?.type_de_lien === undefined) ? 'Creator' : member.lien?.type_de_lien,
-              date_de_naissance: member.date_de_naissance,
-              name: member.nom,
-              prenom: member.prenom,
-              sexe: member.sexe
-            })))
+            setFamilyNode(response.data.map(member => {
+              const baseMember = {
+                key: member._id,
+                pere_id: member?.pere?._id,
+                mere_id: member?.mere?._id,
+                lien: (member.lien?.type_de_lien === undefined) ? 'Family Owner' : member?.lien?.type_de_lien,
+                date_de_naissance: member.date_de_naissance,
+                name: member.nom,
+                prenom: member.prenom,
+                sexe: member.sexe,
+              };
+              if (member?.id_conjoint) {
+                baseMember.ux = member.id_conjoint;
+              }
+              return baseMember;
+            }));
+            
         } catch (error) {
             console.error('Erreur lors de la récupération des membres', error);
         }
@@ -410,10 +415,10 @@ const GoJSDiagram = () => {
         for (let i = 0; i < nodeDataArray.length; i++) {
           const data = nodeDataArray[i];
           const key = data.key;
-          let uxs = data.ux;
+          let uxs = data?.ux ;
           if (uxs !== undefined) {
-            if (typeof uxs === "number") uxs = [uxs];
-            for (let j = 0; j < uxs.length; j++) {
+            if (typeof uxs === "string") uxs = [uxs];
+            for (let j = 0; j < uxs?.length; j++) {
               const wife = uxs[j];
               const link = findMarriage(diagram, key, wife);
               if (link === null) {

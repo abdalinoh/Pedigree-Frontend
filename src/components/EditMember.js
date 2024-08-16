@@ -259,8 +259,6 @@ const EditMember = () => {
                             <Form.Label>Profession</Form.Label>
                             <Form.Control
                                 type="text"
-
-
                                 value={metier}
                                 onChange={(e) => setMetier(e.target.value)}
                             />

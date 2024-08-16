@@ -75,6 +75,7 @@ const UserMember = () => {
     
         // Vérifier si le membre existe déjà
         const memberExists = await checkIfMemberExists(userData.prenom, dateNaissance, gender);
+        const url = (userData.role === 'ADMIN') ? 'admin/member/new-member' : 'user/member/new-member'
         if (memberExists) {
             setMessage('Un membre avec ces informations existe déjà.');
             toast.error('Un membre avec ces informations existe déjà.');
@@ -85,7 +86,7 @@ const UserMember = () => {
     
         try {
             const token = localStorage.getItem('token');
-            const response = await axiosInstance.post('admin/member/new-member', {
+            const response = await axiosInstance.post(url, {
                 prenom: userData?.prenom,
                 token: token,
                 nom: userData?.nom,

@@ -19,7 +19,7 @@ const AddMember = () => {
     const [bloodGroup, setBloodGroup] = useState('');
     const [electrophoresis, setElectrophoresis] = useState('');
     const [signFa, setSignFA] = useState('');
-    const [conjointName, setConjointName] = useState('');
+    const [conjointName, setConjointName] = useState();
     const [metier, setMetier] = useState('');
     const [members, setMembers] = useState([]);
     const [linkTypes, setLinkTypes] = useState([]);
@@ -66,7 +66,7 @@ const AddMember = () => {
           console.error('Erreur lors de la vérification de l\'existence du membre:', error);
           return false;
         }
-      };
+    };
 
       const handleSubmit = async (e) => {
         e.preventDefault();
@@ -85,21 +85,21 @@ const AddMember = () => {
     
         try {
             const response = await axiosInstance.post('admin/member/ajouter', {
-                prenom: firstName,
                 token: token,
                 nom: lastName,
+                prenom: firstName,
                 date_de_naissance: dateNaissance,
+                sexe: gender,
                 id_pere: pereName,
                 id_mere: mereName,
-                statut_matrimonial: isMarried,
                 type_de_lien: selectedLinkType,
-                sexe: gender,
+                statut_matrimonial: isMarried,
+                id_conjoint: conjointName,
                 religion,
+                profession: metier,
                 groupe_sanguin: bloodGroup,
                 electrophorese: electrophoresis,
                 signe_du_fa: signFa,
-                id_conjoint: conjointName,
-                profession: metier
             }, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -133,15 +133,15 @@ const AddMember = () => {
         setFirstName('');
         setLastName('');
         setDateNaissance('');
-        setPereName('');
-        setMereName('');
+        setPereName();
+        setMereName();
         setIsMarried('');
         setGender('');
         setReligion('');
         setBloodGroup('');
         setElectrophoresis('');
         setSignFA('');
-        setConjointName('');
+        setConjointName();
         setSelectedLinkType('');
         setMetier('');
         setMessage('');
