@@ -242,11 +242,6 @@ class GenogramLayout extends go.LayeredDigraphLayout {
 const GoJSDiagram = () => {
   const diagramRef = useRef(null);
   const [familyNode, setFamilyNode] = useState([]);
-  const tab = [
-    { key: 111111111, lien_type_de_lien: "Membre", name: "JAMES", prenom: "Alice", ux: 0, sexe: "F", date_de_naissance: "1978-01-23"},
-    { key: 0, lien_type_de_lien: "Membre", name: "JAMES", prenom: "Aaron", sexe: "M", date_de_naissance: '1978-01-23'},
-      { key: 2, lien_type_de_lien: "Membre", name: "JAMES", prenom: "Bob", sexe:"M", pere_id: 0, mere_id: 111111111, date_de_naissance: "1978-01-23"}
-    ];
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -258,7 +253,7 @@ const GoJSDiagram = () => {
                 key: member._id,
                 pere_id: member?.pere?._id,
                 mere_id: member?.mere?._id,
-                lien: (member.lien?.type_de_lien === undefined) ? 'Family Owner' : member?.lien?.type_de_lien,
+                lien: (member?.lien?.type_de_lien === undefined) ? 'Family Owner' : member?.lien?.type_de_lien,
                 date_de_naissance: member.date_de_naissance,
                 name: member.nom,
                 prenom: member.prenom,
