@@ -83,7 +83,7 @@ class GenogramLayout extends go.LayeredDigraphLayout {
         if (!(link instanceof go.Link)) continue;
         if (!link.isLayoutPositioned || !link.isVisible()) continue;
         if (nonmemberonly && link.containingGroup !== null) continue;
-        if (link.category === "" && link.data) {
+        if (link.category !== "Marriage" && link.data) {
           const parent = net.findVertex(link.fromNode);
           const child = net.findVertex(link.toNode);
           if (child !== null) {
@@ -189,7 +189,7 @@ class GenogramLayout extends go.LayeredDigraphLayout {
         let spouseA = lablink.fromNode;
         let spouseB = lablink.toNode;
         if (spouseA.opacity > 0 && spouseB.opacity > 0) {
-          if (spouseA.category === "F") {
+          if (spouseA.category !== "Masculin") {
             const temp = spouseA;
             spouseA = spouseB;
             spouseB = temp;
@@ -287,7 +287,7 @@ const GoJSDiagram = () => {
         $(go.Placeholder, { margin: 0 })
       ),
     "layout":
-      $(GenogramLayout, { direction: 90, layerSpacing: 30, columnSpacing: 10, })
+      $(GenogramLayout, { direction: 90, layerSpacing: 30, columnSpacing: 10})
       }
     );
     
@@ -357,19 +357,20 @@ const GoJSDiagram = () => {
 
     diagram.linkTemplate = 
     $(go.Link,
-        {
-          routing: go.Routing.Orthogonal, corner: 10, curviness: 15,
-          layerName: "Background", selectable: false
-        },
-        $(go.Shape, { stroke: 'black', strokeWidth: 2 })
-    );
+      {
+        routing: go.Routing.AvoidsNodes, corner: 10, curviness: 15,
+        fromSpot: go.Spot.TopBottomSides, toSpot: go.Spot.TopBottomSides,
+        layerName: "Background", selectable: false
+      },
+      $(go.Shape, { stroke: 'black', strokeWidth: 2 })
+  );
 
     diagram.linkTemplateMap.add("Marriage",
       $(go.Link,
         {
-          routing: go.Routing.AvoidsNodes, corner: 1,
+          routing: go.Routing.Orthogonal, corner: 1,
           fromSpot: go.Spot.LeftRightSides, toSpot: go.Spot.LeftRightSides,
-          selectable: false, isTreeLink: false, layerName: "Background"
+          selectable: false, isTreeLink: true, layerName: "Background"
         },
         $(go.Shape, { strokeWidth: 3})
       )
@@ -435,7 +436,6 @@ const GoJSDiagram = () => {
         const key = data.key;
         const mother = data.mere_id;
         const father = data.pere_id;
-        let val = 0;
         if (mother !== undefined && father !== undefined) {
           const link = findMarriage(diagram, mother, father);
           console.log("unknown marriage: " + mother + " & " + father);
@@ -451,6 +451,15 @@ const GoJSDiagram = () => {
           const mlabkey = mdata.labelKeys[0];
           const cdata = { from: mlabkey, to: key };
           diagram.model.addLinkData(cdata);
+        } else {
+          if (father !== undefined) {
+            const ldata = { from: father, to: key};
+            diagram.model.addLinkData(ldata);
+          }
+          if (mother !== undefined) {
+            const ldata = { from: mother, to: key};
+            diagram.model.addLinkData(ldata);
+          }
         }
       }
     }

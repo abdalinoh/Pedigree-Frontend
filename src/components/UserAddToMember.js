@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Form, Spinner } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
-import { useFamily } from '../context/FamilyContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const UserMember = () => {
-    const { familyData } = useFamily();
     const [userData, setUserData] = useState('');
     const [dateNaissance, setDateNaissance] = useState('');
     const [pereName, setPereName] = useState();
     const [mereName, setMereName] = useState();
-    const [isMarried, setIsMarried] = useState('');
+    const [isMarried, setIsMarried] = useState();
     const [gender, setGender] = useState('');
     const [religion, setReligion] = useState('');
     const [bloodGroup, setBloodGroup] = useState('');
@@ -134,7 +132,7 @@ const UserMember = () => {
         setDateNaissance('');
         setPereName('');
         setMereName('');
-        setIsMarried('');
+        setIsMarried();
         setGender('');
         setReligion('');
         setBloodGroup('');
@@ -145,8 +143,8 @@ const UserMember = () => {
         setMessage('');
     };
 
-   // Assumer que l'admin est toujours connecté
-   const isAdmin = true; // Cette valeur devrait être définie en fonction de la logique d'authentification réelle
+    let isAdmin = false;
+    if (userData?.role === 'ADMIN') isAdmin = true;
 
     return (
         <div className="register-member-container"> 
@@ -249,7 +247,6 @@ const UserMember = () => {
                             <select
                                 value={conjointName}
                                 onChange={(e) => setConjointName(e.target.value)}
-                                required
                             >
                                 <option value="">Sélectionner un membre...</option>
                             {members?.map((member) => (

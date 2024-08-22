@@ -14,6 +14,7 @@ const MemberList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSex, setSelectedSex] = useState('');
+
   const navigate = useNavigate();
 
   // Obtenir les permissions du rôle
@@ -36,16 +37,8 @@ const MemberList = () => {
       selector: row => moment(row.date_de_naissance).format("DD/MM/YYYY"),
     },
     {
-      name: 'Profession',
-      selector: row => row.profession,
-    },
-    {
-      name: 'Religion',
-      selector: row => row.religion,
-    },
-    {
-      name: 'Conjoint',
-      selector: row => row.conjoint,
+      name: 'Sexe',
+      selector: row => row.sexe,
     },
     {
       name: 'Actions',
@@ -60,7 +53,7 @@ const MemberList = () => {
           >
             Détail
           </Button>
-          {role && role.id === 'ADMIN' && (
+          {role === 'ADMIN' && (
             <Button
               onClick={() => handleEdit(row)}
               variant="contained"
@@ -81,7 +74,6 @@ const MemberList = () => {
       try {
         const response = await axiosInstance.get(`/user/member/tous`);
         if (response.data.length === 0) {
-          setError('Aucun membre trouvé.');
         } else {
           setFilteredMembers(response.data);
         }

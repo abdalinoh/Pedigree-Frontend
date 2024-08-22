@@ -24,7 +24,7 @@ const Profile = () => {
             Authorization: `Bearer ${token}`
           }
         });
-        setUserData(userResponse.data.user);        
+        setUserData(userResponse.data?.user);        
         setFormData({
           email: userResponse.data.user?.email || '',
         });
@@ -54,7 +54,7 @@ const Profile = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axiosInstance.put(`/utilisateurs/modifier/${userData.user?.id}`, formData, {
+      await axiosInstance.put(`/utilisateurs/modifier/${userData.user?._id}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
         }

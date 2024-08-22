@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
-import { useFamily } from '../context/FamilyContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AddMember = () => {
-    const { familyData } = useFamily();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [dateNaissance, setDateNaissance] = useState('');
@@ -26,11 +24,25 @@ const AddMember = () => {
     const [selectedLinkType, setSelectedLinkType] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    
-    
+    const [userData, setUserData] = useState('');
     const navigate = useNavigate(); 
 
-
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            const userResponse = await axiosInstance.get('/utils/profile', {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            setUserData(userResponse.data.user);        
+          } catch (error) {
+            console.error('Erreur lors de la récupération des données:', error.response?.data || error.message);
+          }
+        };
+        fetchData();
+    }, []);
     useEffect(() => {
         const fetchLinkTypes = async () => {
             try {
@@ -40,10 +52,8 @@ const AddMember = () => {
                 console.log('Erreur lors de la récupération des types de liens:', error);
             }
         };
-    
         fetchLinkTypes();
     }, []);
-
     useEffect(() => {
         const fetchMembers = async () => {
             try {
@@ -55,7 +65,6 @@ const AddMember = () => {
         };
         fetchMembers();
     }, []);
-
     const checkIfMemberExists = async (firstName, dateNaissance) => {
         try {
           const response = await axiosInstance.get('/user/member/tous', {
@@ -67,12 +76,10 @@ const AddMember = () => {
           return false;
         }
     };
-
-      const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         const token = localStorage.getItem('token');
-    
         // Vérifier si le membre existe déjà
         const memberExists = await checkIfMemberExists(firstName, dateNaissance, gender);
         if (memberExists) {
@@ -82,11 +89,10 @@ const AddMember = () => {
             setTimeout(() => navigate('/home'), 3000); // Redirection vers la page d'accueil après 3 secondes
             return;
         }
-    
         try {
             const response = await axiosInstance.post('admin/member/ajouter', {
                 token: token,
-                nom: lastName,
+                nom: userData.nom,
                 prenom: firstName,
                 date_de_naissance: dateNaissance,
                 sexe: gender,
@@ -128,7 +134,6 @@ const AddMember = () => {
             navigate('/home'); // Vous pourriez vouloir naviguer vers une autre route si nécessaire
         }
     };
-
     const resetForm = () => {
         setFirstName('');
         setLastName('');
@@ -142,13 +147,13 @@ const AddMember = () => {
         setElectrophoresis('');
         setSignFA('');
         setConjointName();
-        setSelectedLinkType('');
+        setSelectedLinkType();
         setMetier('');
         setMessage('');
     };
 
-   // Assumer que l'admin est toujours connecté
-   const isAdmin = true; // Cette valeur devrait être définie en fonction de la logique d'authentification réelle
+   let isAdmin = false;  
+   if (userData?.role === 'ADMIN') isAdmin = true;
 
     return (
         <div className="register-member-container"> 
@@ -156,7 +161,7 @@ const AddMember = () => {
             {message && <p>{message}</p>}
             {isAdmin && (
                 <Alert variant="success">
-                    Vous êtes connecté en tant qu'Administrateur.
+                    Vous êtes connecté en tant que Administrateur.
                 </Alert>
             )}
             {loading && <Spinner animation="border" />}
@@ -167,9 +172,10 @@ const AddMember = () => {
                         <label>Nom :</label>
                         <input
                             type="text"
-                            value={lastName}
+                            value={userData.nom}
                             onChange={(e) => setLastName(e.target.value)}
                             required
+                            readOnly
                         />
                     </div>
                     <div>
@@ -236,7 +242,6 @@ const AddMember = () => {
                 </fieldset>
                 <fieldset>
                     <legend>Autres informations</legend>
-  
                     <Form.Group>
                         <Form.Label>Type de lien :</Form.Label>
                         <Form.Control
@@ -261,7 +266,7 @@ const AddMember = () => {
                             required
                         >
                             <option value="">Sélectionner...</option>
-                            <option value="Marie(e)">Marie(e)</option>
+                            <option value="Marie(e)">Marié(e)</option>
                             <option value="Celibataire">Celibataire</option>
                             <option value="Divorce(e)">Divorce(e)</option>
                             <option value="Veuf(ve)">Veuf(ve)</option>
@@ -334,21 +339,27 @@ const AddMember = () => {
                     </div>
                     <div>
                         <label>Électrophorèse :</label>
-                        <input
-                            type="text"
+                        <select
                             value={electrophoresis}
                             onChange={(e) => setElectrophoresis(e.target.value)}
-                        />
+                        >
+                            <option value="">Sélectionner...</option>
+                            <option value="AA">AA</option>
+                            <option value="AS">AS</option>
+                            <option value="SC">SC</option>
+                            <option value="SS">SS</option>
+                            <option value="Autre">Autre</option>
+                        </select>
                     </div>
                 </fieldset>
                 <div className="form-buttons">
-                <button type="submit">Ajouter</button>
-                <button type="button" onClick={handleCancel}>Annuler</button>
-            </div>
-        </form>
+                    <button type="submit">Ajouter</button>
+                    <button type="button" onClick={handleCancel}>Annuler</button>
+                </div>
+            </form>
         <ToastContainer />
-    </div>
-);
+        </div>
+    );
 };
 
 export default AddMember;
